@@ -33,6 +33,10 @@ float4 PixelShaderFunction(float4 position : SV_Position, float4 color : COLOR0,
 	{
 		//If we are drawing the border, just do a pass-through
 		result = tex2D(BorderSampler, texCoord);
+		if (result.a > 0.0)
+		{
+			result.a = color.a;
+		}
 	}
 	else if (tex.a > 0.0)
 	{

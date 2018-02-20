@@ -33,6 +33,7 @@ namespace LifeBarBuddyTest.WindowsDX
 
 		public MainPage() : base("MainPage")
 		{
+			Transition.OnTime = 3f;
 		}
 
 		private void Reset()
@@ -47,10 +48,21 @@ namespace LifeBarBuddyTest.WindowsDX
 		{
 			base.LoadContent();
 
+			//create the meter rectangles
+			var lifebarRect = new Rectangle(
+				(int)Resolution.TitleSafeArea.Left,
+				(int)Resolution.TitleSafeArea.Top,
+				512, 128);
+
+			var manabarRect = new Rectangle(
+				(int)Resolution.TitleSafeArea.Left,
+				lifebarRect.Bottom,
+				512, 128);
+
 			//create the lifebar
-			lifeBar = new LifeBar(maxHP, Content, new Filename("lifebarBorder.png"), new Filename("lifebar.png"), new Filename("lifebarGradient.png"));
-			manaBar = new SuperBar(maxMana, Content, new Filename("energybackground.png"), new Filename("energymeter.png"), new Filename("energygradient.png"));
-			meterRenderer = new MeterRenderer(Content, new Filename("MeterShader.fx"));
+			lifeBar = new LifeBar(maxHP, Content, "lifebarBorder.png", "lifebar.png", "lifebarGradient.png", lifebarRect);
+			manaBar = new SuperBar(maxMana, Content, "energybackground.png", "energymeter.png", "energygradient.png", manabarRect);
+			meterRenderer = new MeterRenderer(Content, "MeterShader.fx");
 
 			//add a stack of buttons for interacting with stuff
 			var lifeButtonStack = new StackLayout(StackAlignment.Bottom)
@@ -129,8 +141,8 @@ namespace LifeBarBuddyTest.WindowsDX
 		{
 			base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
 
-			lifeBar.Update(Time);
-			manaBar.Update(Time);
+			lifeBar.Update(gameTime);
+			manaBar.Update(gameTime);
 		}
 
 		public override void Draw(GameTime gameTime)
@@ -138,19 +150,12 @@ namespace LifeBarBuddyTest.WindowsDX
 			base.Draw(gameTime);
 
 			//draw the meters
+			meterRenderer.Alpha = Transition.Alpha;
 			meterRenderer.SpriteBatchBegin(ScreenManager.SpriteBatch, Resolution.TransformationMatrix());
 
-			var lifebarRect = new Rectangle(
-				(int)Resolution.TitleSafeArea.Left,
-				(int)Resolution.TitleSafeArea.Top,
-				512, 128);
-			lifeBar.Draw(hitPoints, meterRenderer, ScreenManager.SpriteBatch, lifebarRect);
+			lifeBar.Draw(hitPoints, meterRenderer, ScreenManager.SpriteBatch);
 
-			var manabarRect = new Rectangle(
-				(int)Resolution.TitleSafeArea.Left,
-				lifebarRect.Bottom,
-				512, 128);
-			manaBar.Draw(mana, meterRenderer, ScreenManager.SpriteBatch, manabarRect);
+			manaBar.Draw(mana, meterRenderer, ScreenManager.SpriteBatch);
 
 			ScreenManager.SpriteBatch.End();
 		}
