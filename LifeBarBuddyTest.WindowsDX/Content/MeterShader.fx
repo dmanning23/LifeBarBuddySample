@@ -35,7 +35,7 @@ float4 PixelShaderFunction(float4 position : SV_Position, float4 color : COLOR0,
 		result = tex2D(BorderSampler, texCoord);
 		if (result.a > 0.0)
 		{
-			result.a = color.a;
+			result.a *= color.a;
 		}
 	}
 	else if (tex.a > 0.0)
@@ -53,12 +53,12 @@ float4 PixelShaderFunction(float4 position : SV_Position, float4 color : COLOR0,
 		else if (Start <= alphaMask.a && alphaMask.a <= (End + 0.02))
 		{
 			result = tex * color;
-			result.a = tex.a * color.a * (1 - ((alphaMask.a - End) / ((End + 0.02) - End)));
+			result.a *= tex.a * color.a * (1 - ((alphaMask.a - End) / ((End + 0.02) - End)));
 		}
 		else if ((Start - 0.02) <= alphaMask.a && alphaMask.a <= End)
 		{
 			result = tex * color;
-			result.a = tex.a * color.a * (((alphaMask.a - (Start - 0.02)) / (Start - (Start - 0.02))));
+			result.a *= tex.a * color.a * (((alphaMask.a - (Start - 0.02)) / (Start - (Start - 0.02))));
 		}
 	}
 

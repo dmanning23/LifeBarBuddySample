@@ -84,12 +84,21 @@ namespace LifeBarBuddyTest.WindowsDX
 			lifeButtonStack.AddItem(addManaButton);
 
 			var spendManaButton = AddButton("Use Super");
-			spendManaButton.OnClick += SpendManaButton_OnClick; ;
+			spendManaButton.OnClick += SpendManaButton_OnClick;
 			lifeButtonStack.AddItem(spendManaButton);
+
+			var nopeButton = AddButton("Super Nope");
+			nopeButton.OnClick += NopeButton_OnClick;
+			lifeButtonStack.AddItem(nopeButton);
 
 			AddItem(lifeButtonStack);
 
 			Reset();
+		}
+
+		private void NopeButton_OnClick(object sender, InputHelper.ClickEventArgs e)
+		{
+			manaBar.Nope();
 		}
 
 		private void SpendManaButton_OnClick(object sender, InputHelper.ClickEventArgs e)
