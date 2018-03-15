@@ -1,4 +1,5 @@
 ﻿using FilenameBuddy;
+using GameTimer;
 using LifeBarBuddy;
 using MenuBuddy;
 using Microsoft.Xna.Framework;
@@ -18,14 +19,18 @@ namespace LifeBarBuddyTest.WindowsDX
 
 		const float maxHP = 100f;
 		const float maxMana = 100f;
+		const float maxTime = 6f;
 
 		float hitPoints;
 		float mana;
 
 		ILifeBar lifeBar;
 		ISuperBar manaBar;
+		ITimerMeter timer;
 
 		IMeterRenderer meterRenderer;
+
+		CountdownTimer time;
 
 		#endregion //Properties
 
@@ -42,6 +47,8 @@ namespace LifeBarBuddyTest.WindowsDX
 			mana = 0;
 			lifeBar.Reset();
 			manaBar.Reset();
+			timer.Reset();
+			time = new CountdownTimer();
 		}
 
 		public override void LoadContent()
@@ -59,8 +66,13 @@ namespace LifeBarBuddyTest.WindowsDX
 				lifebarRect.Bottom,
 				512, 128);
 
+			var timerRect = new Rectangle(600,
+				(int)Resolution.TitleSafeArea.Top,
+				128, 128);
+
 			//create the lifebar
 			lifeBar = new LifeBar(maxHP, Content, "lifebarBorder.png", "lifebar.png", "lifebarGradient.png", lifebarRect);
+			timer = new TimerMeter(maxTime, Content, "TimerBackground.png", "TimerMeter.png", "TimerGradient.png", timerRect);
 			manaBar = new SuperBar(maxMana, Content, "energybackground.png", "energymeter.png", "energygradient.png", manabarRect);
 			meterRenderer = new MeterRenderer(Content, "MeterShader.fx");
 
@@ -91,9 +103,19 @@ namespace LifeBarBuddyTest.WindowsDX
 			nopeButton.OnClick += NopeButton_OnClick;
 			lifeButtonStack.AddItem(nopeButton);
 
+			var resetTime = AddButton("ResetTime");
+			resetTime.OnClick += ResetTime_OnClick;
+			lifeButtonStack.AddItem(resetTime);
+
 			AddItem(lifeButtonStack);
 
 			Reset();
+		}
+
+		private void ResetTime_OnClick(object sender, InputHelper.ClickEventArgs e)
+		{
+			time.Start(maxTime);
+			timer.Reset();
 		}
 
 		private void NopeButton_OnClick(object sender, InputHelper.ClickEventArgs e)
@@ -149,9 +171,11 @@ namespace LifeBarBuddyTest.WindowsDX
 		public override void Update(GameTime gameTime, bool otherScreenHasFocus, bool coveredByOtherScreen)
 		{
 			base.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
+			time.Update(gameTime);
 
 			lifeBar.Update(gameTime);
 			manaBar.Update(gameTime);
+			timer.Update(time);
 		}
 
 		public override void Draw(GameTime gameTime)
@@ -165,6 +189,8 @@ namespace LifeBarBuddyTest.WindowsDX
 			lifeBar.Draw(hitPoints, meterRenderer, ScreenManager.SpriteBatch);
 
 			manaBar.Draw(mana, meterRenderer, ScreenManager.SpriteBatch);
+
+			timer.Draw(time.RemainingTime, meterRenderer, ScreenManager.SpriteBatch);
 
 			ScreenManager.SpriteBatch.End();
 		}
