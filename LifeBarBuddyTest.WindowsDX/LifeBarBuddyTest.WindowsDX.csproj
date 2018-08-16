@@ -124,7 +124,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\MeterShader.fx" />
     <Content Include="Content\XmlBuddy.Content.dll" />
     <Content Include="Icon.ico" />
   </ItemGroup>
