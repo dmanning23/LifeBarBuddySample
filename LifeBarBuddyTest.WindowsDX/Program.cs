@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LifeBarBuddySample;
+using System;
 
 namespace LifeBarBuddyTest.WindowsDX
 {

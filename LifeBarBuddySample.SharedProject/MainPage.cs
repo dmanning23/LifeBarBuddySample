@@ -1,17 +1,10 @@
-﻿using FilenameBuddy;
-using GameTimer;
+﻿using GameTimer;
 using LifeBarBuddy;
 using MenuBuddy;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using ResolutionBuddy;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LifeBarBuddyTest.WindowsDX
+namespace LifeBarBuddySample
 {
 	public class MainPage : WidgetScreen
 	{
