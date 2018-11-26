@@ -7,7 +7,11 @@ namespace LifeBarBuddySample
 	/// <summary>
 	/// This is the main type for your game.
 	/// </summary>
+#if ANDROID || __IOS__
+	public class Game1 : TouchGame
+#else
 	public class Game1 : MouseGame
+#endif
 	{
 		public Game1()
 		{

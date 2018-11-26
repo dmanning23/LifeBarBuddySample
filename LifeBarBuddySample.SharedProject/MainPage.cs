@@ -64,10 +64,10 @@ namespace LifeBarBuddySample
 				128, 128);
 
 			//create the lifebar
-			lifeBar = new LifeBar(maxHP, Content, "lifebarBorder.png", "lifebar.png", "lifebarGradient.png", lifebarRect);
+			lifeBar = new LifeBar(maxHP, Content, "lifebarborder.png", "lifebar.png", "lifebarGradient.png", lifebarRect);
 			timer = new TimerMeter(maxTime, Content, "TimerBackground.png", "TimerMeter.png", "TimerGradient.png", timerRect);
 			//manaBar = new SuperBar(maxMana, Content, "energybackground.png", "energymeter.png", "energygradient.png", manabarRect);
-			manaBar = new SuperBar(maxMana, Content, "energymeter1.png", "energymetermask1.png", "energymetergradient1.png", manabarRect);
+			manaBar = new SuperBar(maxMana, Content, "EnergyMeter1.png", "EnergyMeterMask1.png", "EnergyMeterGradient1.png", manabarRect);
 			meterRenderer = new MeterRenderer(Content, "MeterShader.fx");
 
 			//add a stack of buttons for interacting with stuff
