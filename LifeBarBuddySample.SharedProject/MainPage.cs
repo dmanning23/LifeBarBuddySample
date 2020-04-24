@@ -3,6 +3,8 @@ using LifeBarBuddy;
 using MenuBuddy;
 using Microsoft.Xna.Framework;
 using ResolutionBuddy;
+using System;
+using System.Threading.Tasks;
 
 namespace LifeBarBuddySample
 {
@@ -11,15 +13,18 @@ namespace LifeBarBuddySample
 		#region Properties
 
 		const float maxHP = 100f;
-		const float maxMana = 100f;
+		const float maxSuper = 100f;
 		const float maxTime = 6f;
+		const float maxMana = 10f;
 
 		float hitPoints;
+		float superEnergy;
 		float mana;
 
 		ILifeBar lifeBar;
-		ISuperBar manaBar;
+		ISuperBar superBar;
 		ITimerMeter timer;
+		IManaBar manaBar;
 
 		IMeterRenderer meterRenderer;
 
@@ -37,16 +42,18 @@ namespace LifeBarBuddySample
 		private void Reset()
 		{
 			hitPoints = maxHP;
+			superEnergy = 0;
 			mana = 0;
 			lifeBar.Reset();
+			superBar.Reset();
 			manaBar.Reset();
 			timer.Reset();
 			time = new CountdownTimer();
 		}
 
-		public override void LoadContent()
+		public override async Task LoadContent()
 		{
-			base.LoadContent();
+			await base.LoadContent();
 
 			//create the meter rectangles
 			var lifebarRect = new Rectangle(
@@ -54,10 +61,15 @@ namespace LifeBarBuddySample
 				(int)Resolution.TitleSafeArea.Top,
 				512, 128);
 
-			var manabarRect = new Rectangle(
+			var superBarRect = new Rectangle(
 				(int)Resolution.TitleSafeArea.Left,
 				lifebarRect.Bottom,
 				512, 128);
+
+			var manaBarRect = new Rectangle(
+				(int)Resolution.TitleSafeArea.Left,
+				superBarRect.Bottom,
+				1024, 256);
 
 			var timerRect = new Rectangle(600,
 				(int)Resolution.TitleSafeArea.Top,
@@ -66,15 +78,15 @@ namespace LifeBarBuddySample
 			//create the lifebar
 			lifeBar = new LifeBar(maxHP, Content, "lifebarborder.png", "lifebar.png", "lifebarGradient.png", lifebarRect);
 			timer = new TimerMeter(maxTime, Content, "TimerBackground.png", "TimerMeter.png", "TimerGradient.png", timerRect);
-			//manaBar = new SuperBar(maxMana, Content, "energybackground.png", "energymeter.png", "energygradient.png", manabarRect);
-			manaBar = new SuperBar(maxMana, Content, "EnergyMeter1.png", "EnergyMeterMask1.png", "EnergyMeterGradient1.png", manabarRect);
+			manaBar = new ManaBar(maxMana, Content, "energybackground.png", "energymeter.png", "energygradient.png", manaBarRect);
+			superBar = new SuperBar(maxSuper, Content, "EnergyMeter1.png", "EnergyMeterMask1.png", "EnergyMeterGradient1.png", superBarRect);
 			meterRenderer = new MeterRenderer(Content, "MeterShader.fx");
 
 			//add a stack of buttons for interacting with stuff
 			var lifeButtonStack = new StackLayout(StackAlignment.Bottom)
 			{
-				Position = new Point(Resolution.TitleSafeArea.Left, Resolution.TitleSafeArea.Bottom),
-				Horizontal = HorizontalAlignment.Left,
+				Position = new Point(Resolution.TitleSafeArea.Right, Resolution.TitleSafeArea.Bottom),
+				Horizontal = HorizontalAlignment.Right,
 				Vertical = VerticalAlignment.Top
 			};
 			var hitButton = AddButton("Add Damage");
@@ -85,11 +97,19 @@ namespace LifeBarBuddySample
 			healButton.OnClick += HealButton_OnClick;
 			lifeButtonStack.AddItem(healButton);
 
-			var addManaButton = AddButton("Add Energy");
+			var addSuperButton = AddButton("Add Energy");
+			addSuperButton.OnClick += AddSuperButton_OnClick;
+			lifeButtonStack.AddItem(addSuperButton);
+
+			var spendSuperButton = AddButton("Use Super");
+			spendSuperButton.OnClick += SpendSuperButton_OnClick;
+			lifeButtonStack.AddItem(spendSuperButton);
+
+			var addManaButton = AddButton("Add Mana");
 			addManaButton.OnClick += AddManaButton_OnClick;
 			lifeButtonStack.AddItem(addManaButton);
 
-			var spendManaButton = AddButton("Use Super");
+			var spendManaButton = AddButton("Use Mana");
 			spendManaButton.OnClick += SpendManaButton_OnClick;
 			lifeButtonStack.AddItem(spendManaButton);
 
@@ -114,20 +134,32 @@ namespace LifeBarBuddySample
 
 		private void NopeButton_OnClick(object sender, InputHelper.ClickEventArgs e)
 		{
-			manaBar.Nope();
+			superBar.Nope();
+		}
+
+		private void SpendSuperButton_OnClick(object sender, InputHelper.ClickEventArgs e)
+		{
+			superEnergy = 0;
+			superBar.UseEnergy();
+		}
+
+		private void AddSuperButton_OnClick(object sender, InputHelper.ClickEventArgs e)
+		{
+			var damage = 10f;
+			superEnergy += damage;
+			superBar.AddEnergy(damage);
 		}
 
 		private void SpendManaButton_OnClick(object sender, InputHelper.ClickEventArgs e)
 		{
-			mana = 0;
-			manaBar.UseEnergy();
+			var spellCost = 2f;
+			mana = Math.Max(0f, Math.Min(mana - spellCost, maxMana));
+			manaBar.UseMana(spellCost);
 		}
 
 		private void AddManaButton_OnClick(object sender, InputHelper.ClickEventArgs e)
 		{
-			var damage = 10f;
-			mana += damage;
-			manaBar.AddEnergy(damage);
+			mana = Math.Max(0f, Math.Min(mana + 0.5f, maxMana));
 		}
 
 		private void HealButton_OnClick(object sender, InputHelper.ClickEventArgs e)
@@ -148,7 +180,7 @@ namespace LifeBarBuddySample
 		{
 			var hitButton = new RelativeLayoutButton()
 			{
-				Size = new Vector2(256, 72),
+				Size = new Vector2(256, 64),
 				HasOutline = true,
 				HasBackground = true,
 				Horizontal = HorizontalAlignment.Left,
@@ -168,6 +200,7 @@ namespace LifeBarBuddySample
 			time.Update(gameTime);
 
 			lifeBar.Update(gameTime);
+			superBar.Update(gameTime);
 			manaBar.Update(gameTime);
 			timer.Update(time);
 		}
@@ -180,9 +213,11 @@ namespace LifeBarBuddySample
 			meterRenderer.Alpha = Transition.Alpha;
 			meterRenderer.SpriteBatchBegin(ScreenManager.SpriteBatch, Resolution.TransformationMatrix());
 
-			lifeBar.Draw(hitPoints, meterRenderer, ScreenManager.SpriteBatch);
+			lifeBar.Draw(hitPoints, meterRenderer, ScreenManager.SpriteBatch, false);
 
-			manaBar.Draw(mana, meterRenderer, ScreenManager.SpriteBatch);
+			superBar.Draw(superEnergy, meterRenderer, ScreenManager.SpriteBatch, false);
+
+			manaBar.Draw(mana, meterRenderer, ScreenManager.SpriteBatch, false);
 
 			timer.Draw(time.RemainingTime, meterRenderer, ScreenManager.SpriteBatch);
 
